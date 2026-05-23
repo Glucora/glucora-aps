@@ -9,6 +9,8 @@ class BLEEventQueue;
 
 class BLEController{
     public:
+    using GlucoseSampleHandler = void (*)(float);
+
         void startAdvertising();
         void stopAdvertising();
         void createSerivceAndCharacteristic(const char *serviceId, const char* characteristicId);
@@ -20,13 +22,37 @@ class BLEController{
         void init(BLEEventQueue& eventQueue);
         void createService(const char* serviceId);
         void startService(const char* serviceId);
+    void initGlucoseClient(const char* peerAddress,
+                 const char* serviceUuid,
+                 const char* characteristicUuid,
+                 GlucoseSampleHandler sampleHandler);
+    void maintainGlucoseClientConnection();
+    bool isGlucoseClientConnected() const;
+
+    void handleGlucoseClientDisconnect(int reason);
 
     private:
+  bool connectGlucoseClient();
+  bool subscribeToGlucoseCharacteristic();
+
+  static void glucoseNotifyCallback(NimBLERemoteCharacteristic* pCharacteristic,
+                    uint8_t*                    pData,
+                    size_t                      length,
+                    bool                        isNotify);
 
 
     NimBLEAdvertising *pAdvertising = nullptr;
     NimBLEServer* pServer = nullptr;
+  NimBLEClient* pClient = nullptr;
+  NimBLERemoteCharacteristic* pRemoteCharacteristic = nullptr;
     BLEEventQueue* _event_queue;
+  const char* _peerAddress = nullptr;
+  const char* _serviceUuid = nullptr;
+  const char* _characteristicUuid = nullptr;
+  GlucoseSampleHandler _sampleHandler = nullptr;
+  unsigned long _lastReconnectAttempt = 0;
+  unsigned long _reconnectDelayMs = 2000;
+  bool _glucoseClientConnected = false;
 };
 
 template<typename T>

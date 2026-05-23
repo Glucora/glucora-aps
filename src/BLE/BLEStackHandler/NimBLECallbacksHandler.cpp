@@ -19,7 +19,8 @@ void BLEServerCallbacksHandler::onConnect(NimBLEServer *pserver, NimBLEConnInfo 
 
 void BLEServerCallbacksHandler::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason){
     Serial.println("Clinet Disconnected!");
-    Serial.print(reason);
+    Serial.printf("Reason: %d\n", reason);
+    pServer->startAdvertising();
     this->_event_queue->createEvent(BLE::Event::BT_CONNECTION_LOST);
     
 }
