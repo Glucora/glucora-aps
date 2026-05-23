@@ -44,11 +44,19 @@ void BluetoothState::handleEvent(BLE::Event event)
         if(event == BLE::Event::BT_CONNECTION_LOST){
             
             this->currentState = State::ST_BT_CONN_RETRY;
-            ///Add Logic to start a connection retry logic for 10 sec instead of js going idle
+            this->_HAL_Controller->startAdvertising();
+            digitalWrite(2, HIGH);
         }
+        break;
+    case State::ST_BT_CONN_RETRY:
+        if(event == BLE::Event::BT_CONNECTION_REQUEST){
+            this->currentState = State::ST_BT_CONNECTED;
+            this->_HAL_Controller->stopAdvertising();
+            digitalWrite(2, LOW);
+        }
+        break;
 
     default:
-        this->currentState = State::ST_BT_IDLE;
         break;
     }
 }
